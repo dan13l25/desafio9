@@ -4,7 +4,7 @@ import userModel from "../dao/models/users.js";
 import { createHash, isValidPassword } from "../utils.js";
 import GitHubStrategy from "passport-github2"
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
-import { PRIVATE_KEY } from "../utils.js";
+import { PRIVATE_KEY, CLIENT_ID, CLIENT_SECRET, CALLBACK_URL } from "../utils.js";
 
 
 const LocalStrategy = local.Strategy;
@@ -60,9 +60,9 @@ const initializePassport = () => {
         "github",
         new GitHubStrategy(
           {
-            clientID: "Iv1.89a8c663b9e52257",
-            clientSecret: "643b10141b6f34e4baad66e5c0e4d707a27e1502",
-            callbackURL: "http://localhost:8080/api/users/githubcallback",
+            clientID: CLIENT_ID,
+            clientSecret: CLIENT_SECRET,
+            callbackURL: CALLBACK_URL,
           },
           async (accessToken, refreshToken, profile, done) => {
             try {

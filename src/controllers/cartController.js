@@ -1,4 +1,4 @@
-import cartService from "../services/cartService.js";
+import cartService from "../dao/services/cartService.js";
 
 export default class CartController {
     constructor() {

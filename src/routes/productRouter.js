@@ -1,5 +1,5 @@
 import express from "express";
-import ProductController from "../dao/controllers/productController.js";
+import ProductController from "../controllers/productController.js"
 import Product from "../dao/models/product.js";
 
 const productRouter = express.Router();

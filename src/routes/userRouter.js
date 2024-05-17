@@ -1,5 +1,5 @@
 import express from 'express';
-import userController from '../dao/controllers/userController.js';
+import userController from '../controllers/userController.js';
 import passport from 'passport';
 
 

@@ -1,4 +1,4 @@
-import productService from "../services/productService.js";
+import productService from "../dao/services/productService.js";
 
 export default class ProductController {
     constructor() {

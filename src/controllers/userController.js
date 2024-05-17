@@ -1,4 +1,4 @@
-import userService from "../services/userService.js";
+import userService from "../dao/services/userService.js";
 
 const userController = {
     getLogin: async (req, res) => {
