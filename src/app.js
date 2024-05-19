@@ -4,7 +4,6 @@ import __dirname from "./utils.js";
 import handlebars from "express-handlebars";
 import { productRouter } from "./routes/productRouter.js";
 import { cartRouter } from "./routes/cartRouter.js";
-import messagesModel from "./dao/models/message.js";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import userRouter from "./routes/userRouter.js";

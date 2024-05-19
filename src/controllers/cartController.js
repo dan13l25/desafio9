@@ -51,4 +51,33 @@ export default class CartController {
             res.status(500).send("Error interno del servidor");
         }
     }
+
+    async buyCart(req, res) {
+        const { cartId } = req.params;
+        const cartData = req.body;
+        try {
+            const ticket = await cartService.buyCart(cartId, cartData);
+            res.json(ticket);
+        } catch (error) {
+            console.error("Error al realizar la compra:", error.message);
+            res.status(500).send("Error interno del servidor");
+        }
+    }
+
+    async getBuyCart(req, res) {
+        const { cartId } = req.params;
+        const userId = req.session.userId;
+        const user = req.session.user;
+        const isAuthenticated = req.session.isAuthenticated;
+        const jwtToken = req.session.token;
+
+        try {
+            const cart = await cartService.getCartById(cartId, userId);
+            const purchaseCartView = await cartService.getPurchaseCart();
+            res.render(purchaseCartView, { user, isAuthenticated, jwtToken, cart });
+        } catch (error) {
+            console.error("Error al obtener el carrito de compra:", error.message);
+            res.status(500).send("Error interno del servidor");
+        }
+    }
 }
