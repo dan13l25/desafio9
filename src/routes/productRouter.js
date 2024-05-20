@@ -1,5 +1,5 @@
 import express from "express";
-import ProductController from "../controllers/productController.js"
+import ProductController from "../controllers/productController.js";
 import Product from "../dao/models/product.js";
 
 const productRouter = express.Router();
@@ -27,9 +27,9 @@ productRouter.get("/", async (req, res) => {
         const isValid = page >= 1 && page <= totalPages;
 
         products.isValid = isValid;
-        console.log(isValid)
+        console.log(isValid);
         return res.json(products);
-        
+
     } catch (error) {
         console.error(error);
         res.status(500).send("Error al recibir productos");
@@ -37,13 +37,9 @@ productRouter.get("/", async (req, res) => {
 });
 
 productRouter.get("/:pid", productController.getProductById);
-
-productRouter.get("/brand/:brand", productController.getByBrand)
-
-productRouter.post("/", productController.addProduct)
-
-productRouter.put("/:pid", productController.updateProduct)
-
-productRouter.delete("/:pid", productController.deleteProductById)
+productRouter.get("/brand/:brand", productController.getByBrand);
+productRouter.post("/", productController.addProduct);
+productRouter.put("/:pid", productController.updateProduct);
+productRouter.delete("/:pid", productController.deleteProductById);
 
 export { productRouter };

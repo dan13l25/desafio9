@@ -1,21 +1,9 @@
-import Product from "../models/product.js";
+import productRepositorie from "../repositories/productRepositorie.js";
 
 const productService = {
     addProduct: async (title, description, price, thumbnails, code, stock, status, category, brand) => {
         try {
-            const product = new Product({
-                title,
-                description,
-                price,
-                thumbnails,
-                code,
-                stock,
-                status,
-                category,
-                brand
-            });
-    
-            await product.save();
+            await productRepositorie.addProduct(title, description, price, thumbnails, code, stock, status, category, brand);
         } catch (error) {
             console.error("Error al añadir el producto:", error.message);
             throw error;
@@ -24,33 +12,16 @@ const productService = {
 
     readProducts: async () => {
         try {
-            const products = await Product.find();
-            return products;
+            return await productRepositorie.readProducts();
         } catch (error) {
             console.error("Error al leer los productos:", error.message);
             throw error;
         }
     },
 
-    getProducts: async (category, brand, sort) => { 
+    getProducts: async (category, brand, sort) => {
         try {
-            let query = {};
-            if (category) {
-                query.category = category;
-            }
-            if (brand) {
-                query.brand = brand;
-            }
-            const options = {
-                limit: 4,
-                page: 1,
-                sort: { price: sort === 'asc' ? 1 : -1 }
-            };
-
-            const filter = await Product.paginate(query, options).lean();
-            const products = filter.docs.map(product => product.toObject());
-
-            return products;
+            return await productRepositorie.getProducts(category, brand, sort);
         } catch (error) {
             console.error("Error al obtener los productos:", error.message);
             throw error;
@@ -59,8 +30,7 @@ const productService = {
 
     getProductById: async (id) => {
         try {
-            const product = await Product.findById(id);
-            return product; 
+            return await productRepositorie.getProductById(id);
         } catch (error) {
             console.error("Error al obtener el producto:", error.message);
             throw error;
@@ -69,8 +39,7 @@ const productService = {
 
     getByBrand: async (brand) => {
         try {
-            const products = await Product.find({ brand });
-            return products; 
+            return await productRepositorie.getByBrand(brand);
         } catch (error) {
             console.error("Error al obtener los productos por marca:", error.message);
             throw error;
@@ -79,7 +48,7 @@ const productService = {
 
     deleteProductById: async (pid) => {
         try {
-            await Product.findByIdAndDelete({_id:pid});
+            await productRepositorie.deleteProductById(pid);
         } catch (error) {
             console.error("Error al eliminar el producto:", error.message);
             throw error;
@@ -88,8 +57,7 @@ const productService = {
 
     updateProduct: async (pid, newData) => {
         try {
-            const updatedProduct = await Product.findByIdAndUpdate(pid, newData, { new: true });
-            return updatedProduct;
+            return await productRepositorie.updateProduct(pid, newData);
         } catch (error) {
             console.error("Error al actualizar el producto:", error.message);
             throw error;

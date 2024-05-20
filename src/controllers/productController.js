@@ -1,15 +1,29 @@
 import productService from "../dao/services/productService.js";
+import ProductDTO from "../dao/DTO/productDTO.js";
 
 export default class ProductController {
     constructor() {
-        console.log("productcontroller funciona") 
+        console.log("productcontroller funciona");
     }
-    
+
     async addProduct(req, res) {
         const { title, description, price, thumbnails, code, stock, status, category, brand } = req.body;
+        const userId = req.userId; 
+
+        const productData = new ProductDTO(title, brand, description, price, stock, category, thumbnails, userId);
 
         try {
-            await productService.addProduct(title, description, price, thumbnails, code, stock, status, category, brand);
+            await productService.addProduct(
+                productData.title,
+                productData.description,
+                productData.price,
+                productData.image,
+                code,
+                productData.stock,
+                status,
+                productData.category,
+                productData.brand
+            );
             res.status(201).json({ message: "Producto añadido correctamente" });
         } catch (error) {
             console.error("Error al añadir el producto:", error.message);
@@ -26,13 +40,12 @@ export default class ProductController {
             res.status(500).json({ error: "Error interno del servidor" });
         }
     }
-    
 
     async getProducts(req, res) {
         const { category, brand, sort } = req.query;
 
         try {
-            const products = await productService.getProducts({ category, brand, sort });
+            const products = await productService.getProducts(category, brand, sort);
             res.json(products);
         } catch (error) {
             console.error("Error al obtener los productos:", error.message);
@@ -41,7 +54,7 @@ export default class ProductController {
     }
 
     async getProductById(req, res) {
-        console.log( "estos son los ",req.params); // Agrega este console.log para verificar qué contiene req.params
+        console.log("estos son los ", req.params);
         const { pid } = req.params;
         try {
             const product = await productService.getProductById(pid);
