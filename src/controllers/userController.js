@@ -90,7 +90,6 @@ const userController = {
         try {
             const { user, access_token } = await userService.handleGitHubCallback(req);
 
-            // Establece la sesión del usuario
             req.session.token = access_token;
             req.session.userId = user._id;
             req.session.user = user;
@@ -113,7 +112,6 @@ const userController = {
             res.status(500).json({ error: "Error interno del servidor" });
         }
     },
-    
 
     restore: async (req, res, next) => {
         const { email, password } = req.body;

@@ -1,13 +1,14 @@
-import userModel from "../models/users.js";
+import userRepository from "../repositories/userRepositorie.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../../config/jwtConfig.js";
 import { createHash, isValidPassword } from "../../utils.js";
 import { ADMIN_EMAIL, ADMIN_PASSWORD } from "../../utils.js";
+import UserDTO from "../dto/UserDTO.js";
 
 const userService = {
     login: async (email, password) => {
         try {
-            const user = await userModel.findOne({ email });
+            const user = await userRepository.findByEmail(email);
 
             if (!user) {
                 throw new Error("Credenciales inválidas");
@@ -37,33 +38,22 @@ const userService = {
 
     register: async (userData) => {
         try {
-            const { first_name, last_name, email, age, password, username } = userData;
+            const { first_name, last_name, email, age, password } = userData;
 
-            const existingUser = await userModel.findOne({ email });
+            const existingUser = await userRepository.findByEmail(email);
 
             if (existingUser) {
                 throw new Error("El usuario ya existe");
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
+            const userDTO = new UserDTO(first_name, last_name, email, age, hashedPassword);
 
-            const newUser = new userModel({
-                first_name,
-                last_name,
-                email,
-                age,
-                username,
-                password: hashedPassword,
-                role: "user",
-            });
-
-            await newUser.save();
+            const newUser = await userRepository.createUser(userDTO);
 
             const access_token = generateToken(newUser);
 
             return { newUser, access_token };
-            
-            res.redirect("/chat")
         } catch (error) {
             throw error;
         }
@@ -71,7 +61,7 @@ const userService = {
 
     restorePassword: async (email, password) => {
         try {
-            const user = await userModel.findOne({ email });
+            const user = await userRepository.findByEmail(email);
 
             if (!user) {
                 throw new Error("Usuario no encontrado");
@@ -87,13 +77,6 @@ const userService = {
         }
     },
 
-    /*logout: async () => {
-        try {
-            return "Logout funciona";
-        } catch (error) {
-            throw error;
-        }
-    },*/
     logOut: async (req, res) => {
         try {
             res.clearCookie("jwtToken");
