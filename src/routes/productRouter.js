@@ -1,14 +1,8 @@
 import express from "express";
 import ProductController from "../controllers/productController.js";
-import Product from "../dao/models/product.js";
 
 const productRouter = express.Router();
 const productController = new ProductController();
-
-const errorHandler = (res, error) => {
-    console.error(error);
-    res.status(500).send("Error interno del servidor");
-};
 
 productRouter.get("/", async (req, res) => {
     try {
@@ -35,6 +29,9 @@ productRouter.get("/", async (req, res) => {
         res.status(500).send("Error al recibir productos");
     }
 });
+
+// Ruta para renderizar la página de productos
+productRouter.get("/view", productController.renderProductsPage);
 
 productRouter.get("/:pid", productController.getProductById);
 productRouter.get("/brand/:brand", productController.getByBrand);

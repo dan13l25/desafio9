@@ -1,42 +1,21 @@
-<h2>Lista de productos</h2>
-
-  {{#each products}}
-        <div>
-            <h2>{{this.title}}</h2>
-            <p>Description: {{this.description}}</p>
-            <p>Price: ${{this.price}}</p>
-        </div>
-    {{/each}}
-
-    {{#if isValid}}
-    <h2>Lista de productos</h2>
-    <hr>
-    <div>
-        {{#each products}}
-            <div>
-                <h2>{{title}}</h2>
-                <p>Description: {{description}}</p>
-                <p>Price: ${{price}}</p>
-            </div>
-            <br/>
-        {{/each}}   
-    </div>
-    <br/>
-    <hr>
-    <div>
-        {{#if hasPrevPage}}
-            <a href={{this.prevLink}}><< Anterior</a>
-        {{/if}}
-        &nbsp;
-        {{this.page}}
-        &nbsp;
-        {{#if hasNextPage}}
-            <a href={{this.nextLink}}>Siguiente >></a>
-        {{/if}} 
-    </div>
+ <h1>Lista de Productos</h1>
+    {{#if products.length}}
+        <ul>
+            {{#each products}}
+                <li>
+                    <h2>{{this.title}}</h2>
+                    <p>{{this.description}}</p>
+                    <p>Precio: ${{this.price}}</p>
+                    <p>Stock: {{this.stock}}</p>
+                    <p>Categoría: {{this.category}}</p>
+                    <p>Marca: {{this.brand}}</p>
+                    <img src="{{this.thumbnails.[0]}}" alt="{{this.title}}">
+                </li>
+            {{/each}}
+        </ul>
     {{else}}
-<h2>No hay productos para mostrar</h2>
-{{/if}}
+        <p>No hay productos disponibles.</p>
+    {{/if}}
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/products.js"></script>

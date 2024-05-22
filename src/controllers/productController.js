@@ -104,4 +104,15 @@ export default class ProductController {
             res.status(500).json({ error: "Error interno del servidor" });
         }
     }
+
+    async renderProductsPage(req, res) {
+        try {
+            const products = await productService.readProducts();
+            const plainProducts = products.map(product => product.toObject());
+            res.render("product", { products: plainProducts });
+        } catch (error) {
+            console.error("Error al renderizar la página de productos:", error.message);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    }
 }
