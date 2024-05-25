@@ -13,6 +13,7 @@ import initializePassport from "./config/passportConfig.js";
 import { connectMongoDB } from "./config/dbConfig.js";
 import { DB_URL } from "./utils.js";
 import productService from "./dao/services/productService.js";
+import Handlebars from "./utils/handlebarsHelp.js"; // Asegúrate de importar el archivo de helpers
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -20,11 +21,10 @@ const server = app.listen(port, () => console.log("Servidor operando en puerto",
 
 connectMongoDB();
 
-
-//middleware
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.engine("handlebars", handlebars.engine());
+app.engine("handlebars", handlebars.engine({ Handlebars }));
 app.set("view engine", "handlebars");
 app.set("views", __dirname + "/views");
 app.use(express.static(__dirname + "/public"));
@@ -36,20 +36,19 @@ app.use(
       mongoUrl: DB_URL,
       ttl: 3600,
     }),
-    secret:  process.env.SECRET_JWT,
+    secret: process.env.SECRET_JWT,
     resave: false,
     saveUninitialized: false,
   })
 );
 
-initializePassport()
-app.use(passport.initialize())
-app.use(passport.session())
+initializePassport();
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/api/products", productRouter);
 app.use("/api/carts", cartRouter);
 app.use("/api/users", userRouter);
-
 
 app.get("/login", (req, res) => {
   res.render("login");
@@ -66,10 +65,10 @@ app.get("/product", (req, res) => {
 app.get("/", (req, res) => {
   res.render("home");
 });
-app.get("/profile", (req,res)=>{
-  res.render("/profile")
-})
 
+app.get("/profile", (req, res) => {
+  res.render("/profile");
+});
 
 const io = new Server(server);
 const msg = [];
@@ -86,13 +85,13 @@ io.on("connection", (socket) => {
       console.error("Error al guardar el mensaje:", error);
     }
   });
-  socket.on("producto", async(producto)=>{
+  socket.on("producto", async (producto) => {
     try {
-      const allProduct = await productService.getProducts()
-      console.log(allProduct)
-      io.emit("producto", allProduct)
+      const allProduct = await productService.getProducts();
+      console.log(allProduct);
+      io.emit("producto", allProduct);
     } catch (error) {
       console.error("Error al mostrar productos:", error);
     }
-  })
+  });
 });

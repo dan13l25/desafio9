@@ -94,6 +94,15 @@ const productRepositorie = {
             console.error("Error al actualizar el producto:", error.message);
             throw error;
         }
+    },
+
+    paginateProducts: async (options) => {
+        try {
+            return await Product.paginate({}, options);
+        } catch (error) {
+            console.error("Error al paginar los productos:", error.message);
+            throw error;
+        }
     }
 };
 

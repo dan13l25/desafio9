@@ -1,9 +1,6 @@
 import mongoose from "mongoose";
 import { DB_URL } from "../utils.js";
 
-
-
-
 export  const connectMongoDB = async () => {
     try {
       await mongoose.connect(DB_URL);
@@ -14,4 +11,4 @@ export  const connectMongoDB = async () => {
     }
   };
 
-  export default { DB_URL, connectMongoDB };
+  export default { connectMongoDB };

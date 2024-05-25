@@ -107,12 +107,25 @@ export default class ProductController {
 
     async renderProductsPage(req, res) {
         try {
-            const products = await productService.readProducts();
-            const plainProducts = products.map(product => product.toObject());
-            res.render("product", { products: plainProducts });
+            const limit = parseInt(req.query.limit) || 4;
+            const page = parseInt(req.query.page) || 1;
+
+            const options = {
+                limit,
+                page,
+                lean: true
+            };
+
+            const result = await productService.paginateProducts(options);
+            const products = result.docs;  // Productos paginados
+            const totalPages = result.totalPages;
+            const currentPage = result.page;
+
+            res.render("product", { products, totalPages, currentPage });
         } catch (error) {
-            console.error("Error al renderizar la página de productos:", error.message);
+            console.error("Error al renderizar la página de productos paginados:", error.message);
             res.status(500).json({ error: "Error interno del servidor" });
         }
+    
     }
 }
