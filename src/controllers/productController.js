@@ -117,7 +117,7 @@ export default class ProductController {
             };
 
             const result = await productService.paginateProducts(options);
-            const products = result.docs;  // Productos paginados
+            const products = result.docs;  
             const totalPages = result.totalPages;
             const currentPage = result.page;
 

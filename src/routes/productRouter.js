@@ -1,5 +1,6 @@
 import express from "express";
 import ProductController from "../controllers/productController.js";
+import { generateFakeProduct } from "../utils/fakeProduct.js";
 
 const productRouter = express.Router();
 const productController = new ProductController();
@@ -30,9 +31,18 @@ productRouter.get("/", async (req, res) => {
     }
 });
 
+productRouter.get("/mockingproducts", (req, res) => {
+    try {
+        const fakeProducts = generateFakeProduct();
+        res.json(fakeProducts);
+    } catch (error) {
+        console.error("Error al generar productos ficticios:", error.message);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+
 // Ruta para renderizar la página de productos
 productRouter.get("/view", productController.renderProductsPage);
-
 productRouter.get("/:pid", productController.getProductById);
 productRouter.get("/brand/:brand", productController.getByBrand);
 productRouter.post("/", productController.addProduct);
