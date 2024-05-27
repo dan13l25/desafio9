@@ -6,6 +6,7 @@ import userRouter from "./routes/userRouter.js";
 import { connectMongoDB } from "./config/dbConfig.js";
 import productService from "./dao/services/productService.js";
 import { middlewareConfig } from "./config/middlewareConfig.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -20,6 +21,7 @@ middlewareConfig(app);
 app.use("/api/products", productRouter);
 app.use("/api/carts", cartRouter);
 app.use("/api/users", userRouter);
+
 
 app.get("/login", (req, res) => {
   res.render("login");
@@ -40,6 +42,8 @@ app.get("/", (req, res) => {
 app.get("/profile", (req, res) => {
   res.render("/profile");
 });
+
+app.use(errorHandler);
 
 // Configuracion de socket.io
 const io = new Server(server);

@@ -5,11 +5,12 @@ import { createHash, isValidPassword } from "../utils.js";
 import GitHubStrategy from "passport-github2";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import { PRIVATE_KEY, CLIENT_ID, CLIENT_SECRET, CALLBACK_URL } from "../utils.js";
+import { CustomError } from "../utils/customError.js"; 
+import { errorTypes } from "../utils/errorTypes.js";  
 
 const LocalStrategy = local.Strategy;
 
 const initializePassport = () => {
-
     passport.use("register", new LocalStrategy({
         passReqToCallback: true, 
         usernameField: "email"
@@ -19,7 +20,12 @@ const initializePassport = () => {
             const user = await userModel.findOne({ email });
             if (user) {
                 console.log("Usuario ya existe");
-                return done(null, false);
+                return done(null, false, CustomError.createError({
+                    name: "UserExistsError",
+                    message: "Usuario ya existe",
+                    code: errorTypes.ERROR_FORBIDDEN,
+                    description: `User with email ${email} already exists`
+                }));
             }
             const newUser = {
                 first_name,
@@ -32,7 +38,12 @@ const initializePassport = () => {
             const result = await userModel.create(newUser);
             return done(null, result);
         } catch (error) {
-            return done(error);  
+            return done(CustomError.createError({
+                name: "RegisterError",
+                message: "Error al registrar usuario",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));  
         }
     }));
 
@@ -41,12 +52,31 @@ const initializePassport = () => {
     }, async (email, password, done) => {
         try {
             const user = await userModel.findOne({ email });
-            if (!user) return done(null, false);
+            if (!user) {
+                return done(null, false, CustomError.createError({
+                    name: "UserNotFoundError",
+                    message: "Usuario no encontrado",
+                    code: errorTypes.ERROR_NOT_FOUND,
+                    description: `User with email ${email} not found`
+                }));
+            }
             const valid = isValidPassword(user, password);
-            if (!valid) return done(null, false);
+            if (!valid) {
+                return done(null, false, CustomError.createError({
+                    name: "InvalidPasswordError",
+                    message: "Contraseña incorrecta",
+                    code: errorTypes.ERROR_UNAUTHORIZED,
+                    description: "Password does not match"
+                }));
+            }
             return done(null, user);
         } catch (error) {
-            return done(error);
+            return done(CustomError.createError({
+                name: "LoginError",
+                message: "Error al iniciar sesión",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     }));
 
@@ -72,7 +102,12 @@ const initializePassport = () => {
                 done(null, user);
             }
         } catch (error) {
-            return done(error);
+            return done(CustomError.createError({
+                name: "GitHubAuthError",
+                message: "Error en la autenticación con GitHub",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     }));
 
@@ -83,11 +118,21 @@ const initializePassport = () => {
         try {
             const user = await userModel.findById(payload._id);
             if (!user) {
-                return done(null, false, { message: "Usuario no encontrado" });
+                return done(null, false, CustomError.createError({
+                    name: "UserNotFoundError",
+                    message: "Usuario no encontrado",
+                    code: errorTypes.ERROR_NOT_FOUND,
+                    description: `User with id ${payload._id} not found`
+                }));
             }
             return done(null, user);
         } catch (error) {
-            return done(error, false);
+            return done(CustomError.createError({
+                name: "JWTAuthError",
+                message: "Error en la autenticación con JWT",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }), false);
         }
     }));
 
@@ -99,11 +144,21 @@ const initializePassport = () => {
         try {
             const user = await userModel.findById(id);
             if (!user) {
-                return done(null, false); 
+                return done(null, false, CustomError.createError({
+                    name: "UserNotFoundError",
+                    message: "Usuario no encontrado",
+                    code: errorTypes.ERROR_NOT_FOUND,
+                    description: `User with id ${id} not found`
+                })); 
             }
             return done(null, user);
         } catch (error) {
-            return done(error);
+            return done(CustomError.createError({
+                name: "DeserializeError",
+                message: "Error al deserializar usuario",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     });
 };

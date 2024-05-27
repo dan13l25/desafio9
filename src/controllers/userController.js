@@ -1,79 +1,87 @@
 import userService from "../dao/services/userService.js";
+import { errorTypes } from "../utils/errorTypes.js";
+import { CustomError } from "../utils/customError.js";
 
 const userController = {
-    getLogin: async (req, res) => {
+    getLogin: async (req, res, next) => {
         try {
             const loginView = await userService.getLogin();
             res.render(loginView);
         } catch (error) {
-            console.error("Error al obtener la vista de inicio de sesión:", error);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "GetLoginError",
+                message: "Error al obtener la vista de inicio de sesión",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     },
 
     login: async (req, res, next) => {
         const { email, password } = req.body;
-
         try {
             const { user, access_token } = await userService.login(email, password);
-
-            // Establece la sesión del usuario
             req.session.token = access_token;
             req.session.userId = user._id;
             req.session.user = user;
             req.session.isAuthenticated = true;
-
-            console.log("Datos del login:", user, "token:", access_token);
-
-            res.cookie("jwtToken", access_token, {
-                httpOnly: true,
-            }).send({ status: "Success", message: user, access_token, userId: user._id });
+            res.cookie("jwtToken", access_token, { httpOnly: true })
+               .send({ status: "Success", message: user, access_token, userId: user._id });
         } catch (error) {
-            console.error("Error al iniciar sesión:", error);
-            return res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "LoginError",
+                message: "Error al iniciar sesión",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     },
 
-    getRegister: async (req, res) => {
+    getRegister: async (req, res, next) => {
         try {
             const registerView = await userService.getRegister();
             res.render(registerView);
         } catch (error) {
-            console.error("Error al obtener la vista de registro:", error);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "GetRegisterError",
+                message: "Error al obtener la vista de registro",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     },
 
     register: async (req, res, next) => {
         const userData = req.body;
-
         try {
             const { newUser, access_token } = await userService.register(userData);
-
             req.session.token = access_token;
             req.session.userId = newUser._id;
             req.session.user = newUser;
             req.session.isAuthenticated = true;
-
-            console.log("Datos del registro:", newUser, "token:", access_token);
-
-            res.cookie("jwtToken", access_token, {
-                httpOnly: true,
-            }).send({ status: "Success", message: newUser, access_token, userId: newUser._id });
-
+            res.cookie("jwtToken", access_token, { httpOnly: true })
+               .send({ status: "Success", message: newUser, access_token, userId: newUser._id });
         } catch (error) {
-            console.error("Error al registrar usuario:", error);
-            next(error);
+            next(CustomError.createError({
+                name: "RegisterError",
+                message: "Error al registrar usuario",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     },
 
-    getGitHub: async (req, res) => {
+    getGitHub: async (req, res, next) => {
         try {
             const githubAuth = await userService.getGitHub();
             res.redirect(githubAuth);
         } catch (error) {
-            console.error("Error al obtener la autenticación de GitHub:", error);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "GitHubAuthError",
+                message: "Error al obtener la autenticación de GitHub",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     },
 
@@ -81,49 +89,61 @@ const userController = {
         try {
             await userService.gitHubCallback(req, res, next);
         } catch (error) {
-            console.error("Error en el callback de GitHub:", error);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "GitHubCallbackError",
+                message: "Error en el callback de GitHub",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     },
 
-    handleGitHubCallback: async (req, res) => {
+    handleGitHubCallback: async (req, res, next) => {
         try {
             const { user, access_token } = await userService.handleGitHubCallback(req);
-
             req.session.token = access_token;
             req.session.userId = user._id;
             req.session.user = user;
             req.session.isAuthenticated = true;
-
-            res.cookie("jwtToken", access_token, {
-                httpOnly: true,
-            }).send({ status: "Success", message: user, access_token, userId: user._id });
+            res.cookie("jwtToken", access_token, { httpOnly: true })
+               .send({ status: "Success", message: user, access_token, userId: user._id });
         } catch (error) {
-            console.error('Error en el callback de GitHub:', error);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "GitHubHandleCallbackError",
+                message: "Error en el callback de GitHub",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     },
 
-    logOut: async (req, res) => {
+    logOut: async (req, res, next) => {
         try {
             await userService.logOut(req, res);
         } catch (error) {
-            console.error("Error al cerrar sesión:", error);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "LogOutError",
+                message: "Error al cerrar sesión",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     },
 
     restore: async (req, res, next) => {
         const { email, password } = req.body;
-
         try {
             const message = await userService.restorePassword(email, password);
             res.send({ message });
         } catch (error) {
-            console.error("Error al restaurar la contraseña:", error);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "RestorePasswordError",
+                message: "Error al restaurar la contraseña",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     }
-}
+};
 
 export default userController;

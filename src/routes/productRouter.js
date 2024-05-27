@@ -1,6 +1,8 @@
 import express from "express";
 import ProductController from "../controllers/productController.js";
 import { generateFakeProduct } from "../utils/fakeProduct.js";
+import { errorTypes } from "../utils/errorTypes.js";
+import Product from "../dao/models/product.js";
 
 const productRouter = express.Router();
 const productController = new ProductController();
@@ -17,17 +19,15 @@ productRouter.get("/", async (req, res) => {
         };
 
         const products = await Product.paginate({}, options);
-
         const totalPages = Math.ceil(products.total / limit);
         const isValid = page >= 1 && page <= totalPages;
 
         products.isValid = isValid;
-        console.log(isValid);
         return res.json(products);
 
     } catch (error) {
         console.error(error);
-        res.status(500).send("Error al recibir productos");
+        res.status(errorTypes.ERROR_INTERNAL_ERROR).send("Error al recibir productos");
     }
 });
 
@@ -37,7 +37,7 @@ productRouter.get("/mockingproducts", (req, res) => {
         res.json(fakeProducts);
     } catch (error) {
         console.error("Error al generar productos ficticios:", error.message);
-        res.status(500).json({ error: "Error interno del servidor" });
+        res.status(errorTypes.ERROR_INTERNAL_ERROR).json({ error: "Error interno del servidor" });
     }
 });
 

@@ -1,17 +1,29 @@
 import productService from "../dao/services/productService.js";
 import ProductDTO from "../dao/DTO/productDTO.js";
+import { errorTypes } from "../utils/errorTypes.js";
+import { succesTypes } from "../utils/errorTypes.js";
+import { CustomError } from "../utils/customError.js"; 
 
 export default class ProductController {
     constructor() {
         console.log("productcontroller funciona");
     }
 
-    async addProduct(req, res) {
+    async addProduct(req, res, next) {
         const { title, description, price, thumbnails, code, stock, status, category, brand } = req.body;
-        const userId = req.userId; 
-
+    
+        if (!title || !price) {
+            return next(CustomError.createError({
+                name: "ValidationError",
+                message: "Title and Price are required fields",
+                code: errorTypes.ERROR_BAD_REQUEST, 
+                description: "Missing required fields: title and price"
+            }));
+        }
+    
+        const userId = req.userId;
         const productData = new ProductDTO(title, brand, description, price, stock, category, thumbnails, userId);
-
+    
         try {
             await productService.addProduct(
                 productData.title,
@@ -24,75 +36,103 @@ export default class ProductController {
                 productData.category,
                 productData.brand
             );
-            res.status(201).json({ message: "Producto añadido correctamente" });
+            res.status(succesTypes.SUCCESS_CREATED).json({ message: "Producto añadido correctamente" });
         } catch (error) {
-            console.error("Error al añadir el producto:", error.message);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "AddProductError",
+                message: "Error al añadir el producto",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     }
 
-    async readProducts(req, res) {
+    async readProducts(req, res, next) {
         try {
             const products = await productService.readProducts();
             res.json(products);
         } catch (error) {
-            console.error("Error al leer los productos:", error.message);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "ReadProductsError",
+                message: "Error al leer los productos",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     }
 
-    async getProducts(req, res) {
+    async getProducts(req, res, next) {
         const { category, brand, sort } = req.query;
 
         try {
             const products = await productService.getProducts(category, brand, sort);
             res.json(products);
         } catch (error) {
-            console.error("Error al obtener los productos:", error.message);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "GetProductsError",
+                message: "Error al obtener los productos",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     }
 
-    async getProductById(req, res) {
-        console.log("estos son los ", req.params);
+    async getProductById(req, res, next) {
         const { pid } = req.params;
         try {
             const product = await productService.getProductById(pid);
             if (!product) {
-                return res.status(404).json({ error: "Producto no encontrado" });
+                return next(CustomError.createError({
+                    name: "ProductNotFoundError",
+                    message: "Producto no encontrado",
+                    code: errorTypes.ERROR_NOT_FOUND,
+                    description: `Product with id ${pid} not found`
+                }));
             }
             res.json(product);
         } catch (error) {
-            console.error("Error al obtener el producto:", error.message);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "GetProductByIdError",
+                message: "Error al obtener el producto",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     }
 
-    async getByBrand(req, res) {
+    async getByBrand(req, res, next) {
         const { brand } = req.params;
 
         try {
             const products = await productService.getByBrand(brand);
             res.json(products);
         } catch (error) {
-            console.error("Error al obtener los productos por marca:", error.message);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "GetByBrandError",
+                message: "Error al obtener los productos por marca",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     }
 
-    async deleteProductById(req, res) {
+    async deleteProductById(req, res, next) {
         const { pid } = req.params;
 
         try {
             await productService.deleteProductById(pid);
             res.json({ message: "Producto eliminado correctamente" });
         } catch (error) {
-            console.error("Error al eliminar el producto:", error.message);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "DeleteProductByIdError",
+                message: "Error al eliminar el producto",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     }
 
-    async updateProduct(req, res) {
+    async updateProduct(req, res, next) {
         const { pid } = req.params;
         const newData = req.body;
 
@@ -100,12 +140,16 @@ export default class ProductController {
             const updatedProduct = await productService.updateProduct(pid, newData);
             res.json(updatedProduct);
         } catch (error) {
-            console.error("Error al actualizar el producto:", error.message);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "UpdateProductError",
+                message: "Error al actualizar el producto",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
     }
 
-    async renderProductsPage(req, res) {
+    async renderProductsPage(req, res, next) {
         try {
             const limit = parseInt(req.query.limit) || 4;
             const page = parseInt(req.query.page) || 1;
@@ -123,9 +167,12 @@ export default class ProductController {
 
             res.render("product", { products, totalPages, currentPage });
         } catch (error) {
-            console.error("Error al renderizar la página de productos paginados:", error.message);
-            res.status(500).json({ error: "Error interno del servidor" });
+            next(CustomError.createError({
+                name: "RenderProductsPageError",
+                message: "Error al renderizar la página de productos paginados",
+                code: errorTypes.ERROR_INTERNAL_ERROR,
+                description: error.message
+            }));
         }
-    
     }
 }
