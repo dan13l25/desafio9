@@ -3,6 +3,8 @@ import ProductController from "../controllers/productController.js";
 import { generateFakeProduct } from "../utils/fakeProduct.js";
 import { errorTypes } from "../utils/errorTypes.js";
 import Product from "../dao/models/product.js";
+import { isAdmin } from "../middlewares/adminAuth.js";
+import { authenticate } from "../middlewares/authenticate.js";
 
 const productRouter = express.Router();
 const productController = new ProductController();
@@ -45,7 +47,7 @@ productRouter.get("/mockingproducts", (req, res) => {
 productRouter.get("/view", productController.renderProductsPage);
 productRouter.get("/:pid", productController.getProductById);
 productRouter.get("/brand/:brand", productController.getByBrand);
-productRouter.post("/", productController.addProduct);
+productRouter.post('/addProduct', authenticate, isAdmin, (req, res, next) => productController.addProduct(req, res, next));
 productRouter.put("/:pid", productController.updateProduct);
 productRouter.delete("/:pid", productController.deleteProductById);
 

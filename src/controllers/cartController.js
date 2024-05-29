@@ -1,6 +1,6 @@
 import cartService from "../dao/services/cartService.js";
 import { errorTypes } from "../utils/errorTypes.js";
-import { CustomError } from "../utils/customError.js"; // Importa CustomError
+import { CustomError } from "../utils/customError.js"; 
 
 export default class CartController {
     constructor() {
